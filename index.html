@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanSnap — AI Background Remover</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="brand"><span class="icon"><i class="fa-regular fa-hand-scissors" style="color: rgb(0, 0, 0);"></i></span> CleanSnap</div>
+    <div class="nav-links">
+      <a href="#tool">Remove background</a>
+      <a href="#how">How it works</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="#pricing">Go Pro</a>
+      <a class="btn btn-primary btn-sm" href="#tool">Remove Background</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-grid">
+      <div>
+        <h1>Erase the background.<br>Keep the <em>subject.</em></h1>
+        <p class="lead">Drop in any photo and CleanSnap's AI finds the edges, lifts the subject, and hands you a clean transparent cutout — no dragging a lasso, no green screen.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#tool">Remove a background for free</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="slider">
+          <img class="base checker" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80&fit=crop" alt="">
+          <img class="base" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80&fit=crop" alt="Portrait, original">
+          <div class="cut-side checker">
+            <img src="images/cutout.png" alt="Portrait, background removed">
+          </div>
+          <div class="divider"></div>
+          <span class="tag left">Cutout</span>
+          <span class="tag right">Original</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="tool" id="tool">
+    <div class="shell">
+      <div class="section-head">
+        <div class="kicker">The tool</div>
+        <h2>Remove a background</h2>
+        <p>Upload a photo, let the AI do the first pass, then fine-tune the edges or swap in a new backdrop before you download.</p>
+      </div>
+
+      <div class="tool-panel">
+        <div class="tool-tabs">
+          <div class="tool-tab active" data-tab="upload">Upload</div>
+          <div class="tool-tab" data-tab="batch">Batch process</div>
+          <div class="tool-tab" data-tab="templates">Templates</div>
+        </div>
+
+        <div class="tool-body">
+          <div>
+            <div class="canvas-wrap checker" id="canvasWrap">
+              <div class="dropzone" id="dropzone">
+                <div class="ic">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-5 5M12 4l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <strong>Drop a photo here</strong>
+                <span>or click to browse · JPG, PNG, WEBP up to 10MB</span>
+                <input type="file" id="fileInput" accept="image/*">
+              </div>
+              <canvas id="canvas" style="display:none;"></canvas>
+              <div class="canvas-toolbar" id="canvasToolbar" style="display:none;">
+                <button data-mode="auto" class="active">Auto</button>
+                <button data-mode="erase">Erase</button>
+                <button data-mode="restore">Restore</button>
+              </div>
+              <div class="processing-veil" id="veil" style="display:none;">
+                <div class="spinner"></div>
+                <span id="veilText">Finding the edges…</span>
+              </div>
+            </div>
+            <p class="hint" id="brushHint" style="display:none;">Drag on the image to erase or restore. Use the brush size slider on the right to adjust precision.</p>
+          </div>
+
+          <div class="tool-side">
+            <div class="side-block" id="startBlock">
+              <h4>Get started</h4>
+              <p style="color:var(--text-dim); font-size:0.9rem; line-height:1.55;">Choose a photo and the AI will detect a person or a car in it, then cut out everything else. The first run downloads a small detection model, so it takes a few seconds longer.</p>
+            </div>
+
+            <div id="editControls" style="display:none;">
+              <div class="side-block">
+                <h4>Brush size — <span id="brushSizeLabel">32px</span></h4>
+                <input type="range" id="brushSize" min="8" max="80" value="32">
+              </div>
+              <div class="side-block">
+                <h4>Edge smoothing — <span id="smoothLabel">40%</span></h4>
+                <input type="range" id="smoothing" min="0" max="100" value="40">
+              </div>
+              <div class="side-block">
+                <h4>Quick backgrounds</h4>
+                <div class="swatches" id="swatches">
+                  <div class="swatch transparent selected" data-bg="transparent" title="Transparent"></div>
+                  <div class="swatch" style="background:#ffffff; border-color:#ddd;" data-bg="#ffffff" title="White"></div>
+                  <div class="swatch" style="background:#0d0b1a;" data-bg="#0d0b1a" title="Black"></div>
+                  <div class="swatch" style="background:#c9bdfd;" data-bg="#c9bdfd" title="Lilac"></div>
+                  <div class="swatch" style="background:#35c98d;" data-bg="#35c98d" title="Mint"></div>
+                  <div class="swatch" style="background:linear-gradient(135deg,#6c4cf1,#241d55);" data-bg="gradient" title="Violet gradient"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tool-actions">
+              <button class="btn btn-primary" id="removeBtn" style="flex:1;" disabled>Remove Background</button>
+            </div>
+            <div class="tool-actions" id="postActions" style="display:none;">
+              <button class="btn btn-dark" id="downloadBtn" style="flex:1;">Download PNG</button>
+              <button class="btn btn-ghost" id="resetBtn">New photo</button>
+            </div>
+            <p class="hint">Free plan exports include a light watermark. <a href="#pricing" style="color:var(--violet-deep); font-weight:600; text-decoration:none;">Go Pro</a> for watermark-free, high-res downloads.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="shell">
+      <div class="section-head">
+        <div class="kicker">How it works</div>
+        <h2>From photo to cutout in three steps</h2>
+        <p>No manual tracing required — the AI handles edge detection, you handle the final polish.</p>
+      </div>
+      <div class="steps">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Upload your photo</h3>
+          <p>Drag a file in or pick one from your device. Portraits, products, and pets all work — the model was trained across all three.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>AI lifts the subject</h3>
+          <p>CleanSnap detects the subject's edges — hair, fabric, fingers included — and separates it from the background in seconds.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Refine and export</h3>
+          <p>Touch up stray pixels with the erase and restore brushes, drop in a new backdrop, then download a transparent PNG.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tool" id="gallery">
+    <div class="shell">
+      <div class="gallery-head">
+        <div class="section-head" style="margin-bottom:0;">
+          <div class="kicker">My gallery</div>
+          <h2>Your recent cutouts</h2>
+        </div>
+        <div class="nav-links" style="gap:22px;">
+          <a href="#" style="color:var(--ink); font-weight:600;">All</a>
+          <a href="#">Edited</a>
+          <a href="#">Favorites</a>
+        </div>
+      </div>
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="gallery-empty">Cutouts you make in the tool above will show up here for this session.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="shell">
+      <div class="section-head">
+        <div class="kicker">Go Pro</div>
+        <h2>Unlock the full power of CleanSnap</h2>
+        <p>Start free. Upgrade when you're removing backgrounds every day.</p>
+      </div>
+      <div class="price-grid">
+        <div class="price-card">
+          <h3>Free</h3>
+          <div class="amount">$0<span> /forever</span></div>
+          <ul>
+            <li><span class="ck">✓</span> 5 background removals / month</li>
+            <li><span class="ck">✓</span> Standard resolution exports</li>
+            <li><span class="ck">✓</span> Manual erase &amp; restore</li>
+            <li><span class="ck">✓</span> Light watermark on export</li>
+          </ul>
+          <a class="btn btn-ghost" style="margin-top:auto; color:#fff; border-color:rgba(255,255,255,0.25);" href="#tool">Start free</a>
+        </div>
+        <div class="price-card featured">
+          <span class="badge">Most popular</span>
+          <h3>Pro — Yearly</h3>
+          <div class="amount">$29.99<span> /year</span></div>
+          <ul>
+            <li><span class="ck">✓</span> Unlimited background removals</li>
+            <li><span class="ck">✓</span> Batch processing</li>
+            <li><span class="ck">✓</span> High-resolution exports</li>
+            <li><span class="ck">✓</span> No watermark</li>
+            <li><span class="ck">✓</span> Premium backgrounds &amp; templates</li>
+          </ul>
+          <button class="btn btn-primary" style="margin-top:auto;" onclick="showToast('This is a design demo — no live subscription yet.')">Subscribe</button>
+        </div>
+        <div class="price-card">
+          <h3>Pro — Monthly</h3>
+          <div class="amount">$4.99<span> /month</span></div>
+          <ul>
+            <li><span class="ck">✓</span> Unlimited background removals</li>
+            <li><span class="ck">✓</span> Batch processing</li>
+            <li><span class="ck">✓</span> High-resolution exports</li>
+            <li><span class="ck">✓</span> No watermark</li>
+          </ul>
+          <button class="btn btn-ghost" style="margin-top:auto; color:#fff; border-color:rgba(255,255,255,0.25);" onclick="showToast('This is a design demo — no live subscription yet.')">Subscribe</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-row">
+      <div class="brand" style="font-size:1rem;"><span class="brand-mark" style="width:24px;height:24px;"></span> CleanSnap</div>
+      <span>Remove backgrounds. Create without limits.</span>
+      <span>© 2026 CleanSnap</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.1/dist/deeplab.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
